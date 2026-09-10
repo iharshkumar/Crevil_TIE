@@ -4,6 +4,6 @@ export default defineConfig({
     plugins:[react()],
     server:{
         host:'0.0.0.0',
-        allowedHosts: true
+        allowedHosts: ['5174-kode-ws-c68361e34.hebbale.academy']
     }
 })
