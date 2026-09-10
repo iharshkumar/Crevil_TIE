@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Scheme from '../models/Scheme.js';
+import Scheme from '../models/Schema.js';
 
 let memorySchemes = [];
 

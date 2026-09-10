@@ -2,11 +2,11 @@
   "name": "admin-backend",
   "version": "1.0.0",
   "description": "Admin API Backend for SchemeSaathi with MongoDB",
-  "main": "src/server.js",
+  "main": "src/routes.js",
   "type": "module",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "start": "node src/routes.js",
+    "dev": "node --watch src/routes.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
