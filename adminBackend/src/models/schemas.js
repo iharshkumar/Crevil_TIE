@@ -107,4 +107,4 @@ const schemaSchema = new mongoose.Schema(
         timestamps: true
     }
 );
-export defaultmongoose.model('Scheme',schemeScheme);
+export default mongoose.model('Scheme', schemeSchema);
