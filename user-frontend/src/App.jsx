@@ -6,7 +6,7 @@ import FamilyProfilePage from './pages/FamilyProfilePage';
 import ExploreSchemesPage from './pages/ExploreSchemesPage';
 import EligibleSchemesPage from './pages/EligibleSchemesPage';
 import SchemeDetailsPage from './pages/SchemeDetailsPage';
-import AboutPage from './pages/AboutPage';
+import AboutPage from './pages/AboutPages';
 import AssistedHelpWidget from './components/AssistedHelpWidget';
 import { DEMO_PROFILES } from './data/demoProfiles';
 

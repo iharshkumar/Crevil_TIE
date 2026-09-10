@@ -1,0 +1,14 @@
+{
+  "name": "schemesaathi-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SchemeSaathi Monorepo: 2 Frontends (Admin, User) & 2 Backends (Admin, User) with MongoDB",
+  "scripts": {
+    "dev:user-frontend": "npm run dev --prefix user-frontend",
+    "dev:admin-frontend": "npm run dev --prefix admin-frontend",
+    "dev:user-backend": "npm run dev --prefix user-backend",
+    "dev:admin-backend": "npm run dev --prefix admin-backend",
+    "build:user-frontend": "npm run build --prefix user-frontend",
+    "deploy:firebase": "npm run build:user-frontend && npx firebase-tools deploy --only hosting"
+  }
+}
