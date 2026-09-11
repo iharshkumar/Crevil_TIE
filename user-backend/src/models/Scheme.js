@@ -24,4 +24,4 @@ const schemeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model('Scheme', schemeSchema);
+export default mongoose.models.Scheme || mongoose.model('Scheme', schemeSchema);

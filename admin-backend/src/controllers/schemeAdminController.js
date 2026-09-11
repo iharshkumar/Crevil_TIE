@@ -7,8 +7,7 @@ export const getSchemes = async (req, res) => {
   if (mongoose.connection.readyState === 1) {
     try {
       const dbSchemes = await Scheme.find().sort({ createdAt: -1 });
-      const allSchemes = [...dbSchemes, ...memorySchemes];
-      return res.status(200).json({ success: true, count: allSchemes.length, data: allSchemes });
+      return res.status(200).json({ success: true, count: dbSchemes.length, data: dbSchemes });
     } catch (error) {
       return res.status(200).json({ success: true, count: memorySchemes.length, data: memorySchemes });
     }
@@ -31,7 +30,7 @@ export const createScheme = async (req, res) => {
     benefits: benefits || ['Financial assistance'],
     documentsRequired: documentsRequired || ['Aadhaar Card'],
     applicationUrl: applicationUrl || 'https://india.gov.in',
-    eligibilityCriteria: eligibilityCriteria || { maxIncomeLimit: 250000 },
+    eligibilityCriteria: eligibilityCriteria || { maxIncomeLimit: 250000, minAge: 0, maxAge: 100, genderAllowed: ['all'], residenceState: 'All' },
     isPublished: true,
     createdAt: new Date()
   };
@@ -53,7 +52,7 @@ export const createScheme = async (req, res) => {
       console.log(`[MongoDB Atlas] New Scheme Pushed by Admin: ${title}`);
       return res.status(201).json({ success: true, data: dbScheme });
     } catch (error) {
-      console.warn(`[MongoDB Fallback] Saving scheme to memory store: ${title}`);
+      console.warn(`[MongoDB Fallback] Saving scheme to memory store: ${title}`, error.message);
       memorySchemes.unshift(schemeObj);
       return res.status(201).json({ success: true, data: schemeObj, fallback: true });
     }

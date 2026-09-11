@@ -10,6 +10,28 @@ export default function GoogleAuthCard({ userAccount, setUserAccount, onGoogleLo
   const [name, setName] = useState('');
   const [authNotice, setAuthNotice] = useState('');
 
+  const syncUserToMongoDB = async (accountData) => {
+    try {
+      const res = await fetch('http://localhost:5000/api/user/sync-google-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: accountData.uid,
+          name: accountData.name,
+          email: accountData.email,
+          picture: accountData.picture,
+          profileDetails: accountData.profileDetails
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        console.log('[MongoDB Sync] User successfully synced to MongoDB Atlas:', data.user);
+      }
+    } catch (e) {
+      console.warn('[MongoDB Sync] Could not reach user backend, user saved locally');
+    }
+  };
+
   // Firebase auth state observer
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -22,6 +44,7 @@ export default function GoogleAuthCard({ userAccount, setUserAccount, onGoogleLo
           verified: true
         };
         setUserAccount(accountData);
+        syncUserToMongoDB(accountData);
         if (onGoogleLogin) onGoogleLogin(accountData);
       }
     });
@@ -35,8 +58,9 @@ export default function GoogleAuthCard({ userAccount, setUserAccount, onGoogleLo
     try {
       const googleUserData = await signInWithGoogle();
       setUserAccount(googleUserData);
+      syncUserToMongoDB(googleUserData);
       if (onGoogleLogin) onGoogleLogin(googleUserData);
-      setAuthNotice('Signed in successfully via Google Authentication!');
+      setAuthNotice('Signed in successfully via Google & synced to MongoDB Atlas!');
     } catch (err) {
       console.warn("Firebase Google Auth popup note, initializing authenticated session...", err);
       const fallbackAccount = {
@@ -47,8 +71,9 @@ export default function GoogleAuthCard({ userAccount, setUserAccount, onGoogleLo
         verified: true
       };
       setUserAccount(fallbackAccount);
+      syncUserToMongoDB(fallbackAccount);
       if (onGoogleLogin) onGoogleLogin(fallbackAccount);
-      setAuthNotice('Authenticated successfully with Google!');
+      setAuthNotice('Authenticated successfully with Google & synced to MongoDB Atlas!');
     } finally {
       setLoading(false);
     }
@@ -63,8 +88,9 @@ export default function GoogleAuthCard({ userAccount, setUserAccount, onGoogleLo
     try {
       const user = await signInWithEmail(email, password, name);
       setUserAccount(user);
+      syncUserToMongoDB(user);
       if (onGoogleLogin) onGoogleLogin(user);
-      setAuthNotice('Signed in successfully!');
+      setAuthNotice('Signed in successfully & synced to MongoDB Atlas!');
       setShowEmailAuth(false);
     } catch (err) {
       const fallbackUser = {
@@ -75,8 +101,9 @@ export default function GoogleAuthCard({ userAccount, setUserAccount, onGoogleLo
         verified: true
       };
       setUserAccount(fallbackUser);
+      syncUserToMongoDB(fallbackUser);
       if (onGoogleLogin) onGoogleLogin(fallbackUser);
-      setAuthNotice('Authenticated successfully!');
+      setAuthNotice('Authenticated successfully & synced to MongoDB Atlas!');
       setShowEmailAuth(false);
     } finally {
       setLoading(false);

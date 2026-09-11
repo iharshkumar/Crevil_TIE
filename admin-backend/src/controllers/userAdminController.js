@@ -12,10 +12,9 @@ export const getUsers = async (req, res) => {
   if (mongoose.connection.readyState === 1) {
     try {
       const dbUsers = await User.find().sort({ createdAt: -1 });
-      if (dbUsers.length > 0) {
-        return res.status(200).json({ success: true, count: dbUsers.length, data: dbUsers });
-      }
+      return res.status(200).json({ success: true, count: dbUsers.length, data: dbUsers });
     } catch (error) {
+      return res.status(200).json({ success: true, count: memoryUsers.length, data: memoryUsers });
     }
   }
   return res.status(200).json({ success: true, count: memoryUsers.length, data: memoryUsers });

@@ -37,28 +37,69 @@ export default function FamilyProfilePage({
 
   const [memberForm, setMemberForm] = useState(initialMemberState);
 
+  const syncProfileWithBackend = async (emailToSync, updatedProfile) => {
+    const targetEmail = emailToSync || userAccount?.email || updatedProfile?.familyDetails?.email;
+    if (!targetEmail) return;
+
+    const headMember = updatedProfile?.members?.find(m => m.relationship === 'Head of Family') || updatedProfile?.members?.[0];
+
+    try {
+      const res = await fetch('http://localhost:5000/api/user/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: targetEmail,
+          name: updatedProfile?.familyDetails?.familyName || targetEmail.split('@')[0],
+          profileDetails: {
+            age: headMember?.age || 25,
+            gender: (headMember?.gender || 'male').toLowerCase(),
+            income: headMember?.annualIncome || 200000,
+            category: headMember?.socialCategory || 'General',
+            occupation: headMember?.occupation || 'Farmer',
+            state: updatedProfile?.familyDetails?.state || 'Uttar Pradesh',
+            disabilityStatus: headMember?.disability && headMember.disability !== 'No Disability'
+          }
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSyncMessage('Household Profile synced with MongoDB Atlas!');
+        setTimeout(() => setSyncMessage(''), 4000);
+      }
+    } catch (e) {
+      console.warn('[MongoDB Sync] Offline mode');
+    }
+  };
+
   // Handle Family Details change
   const handleFamilyDetailsChange = (e) => {
     const { name, value } = e.target;
-    setFamilyProfile(prev => ({
-      ...prev,
-      familyDetails: {
-        ...prev.familyDetails,
-        [name]: value
-      }
-    }));
+    const newDetails = {
+      ...familyProfile?.familyDetails,
+      [name]: value
+    };
+    const newProfile = {
+      ...familyProfile,
+      familyDetails: newDetails
+    };
+    setFamilyProfile(newProfile);
+    if (name === 'email' || name === 'state' || name === 'familyName') {
+      syncProfileWithBackend(newDetails.email, newProfile);
+    }
   };
 
   // Google Login Auto Fill Handler
   const handleGoogleLogin = (googleUser) => {
-    setFamilyProfile(prev => ({
-      ...prev,
+    const newProfile = {
+      ...familyProfile,
       familyDetails: {
-        ...prev.familyDetails,
+        ...familyProfile?.familyDetails,
         familyName: `${googleUser.name.split(' ')[0]} Household`,
         email: googleUser.email
       }
-    }));
+    };
+    setFamilyProfile(newProfile);
+    syncProfileWithBackend(googleUser.email, newProfile);
   };
 
   // Open modal for adding new member
@@ -116,17 +157,15 @@ export default function FamilyProfilePage({
     e.preventDefault();
     if (!memberForm.name || memberForm.age === '') return;
 
+    let updatedMembers = [];
     if (editingMemberId) {
       // Update existing
-      setFamilyProfile(prev => ({
-        ...prev,
-        members: prev.members.map(m => m.id === editingMemberId ? {
-          ...memberForm,
-          id: editingMemberId,
-          age: Number(memberForm.age),
-          annualIncome: Number(memberForm.annualIncome) || 0
-        } : m)
-      }));
+      updatedMembers = familyProfile.members.map(m => m.id === editingMemberId ? {
+        ...memberForm,
+        id: editingMemberId,
+        age: Number(memberForm.age),
+        annualIncome: Number(memberForm.annualIncome) || 0
+      } : m);
     } else {
       // Add new
       const newMember = {
@@ -135,11 +174,16 @@ export default function FamilyProfilePage({
         age: Number(memberForm.age),
         annualIncome: Number(memberForm.annualIncome) || 0
       };
-      setFamilyProfile(prev => ({
-        ...prev,
-        members: [...prev.members, newMember]
-      }));
+      updatedMembers = [...familyProfile.members, newMember];
     }
+
+    const updatedProfile = {
+      ...familyProfile,
+      members: updatedMembers
+    };
+
+    setFamilyProfile(updatedProfile);
+    syncProfileWithBackend(familyProfile?.familyDetails?.email, updatedProfile);
 
     setShowAddModal(false);
     setMemberForm(initialMemberState);
